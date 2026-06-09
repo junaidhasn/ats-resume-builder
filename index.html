@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ATS Resume Builder</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f11; color: #e8e8f0; min-height: 100vh; padding: 40px 20px; }
+    .container { max-width: 700px; margin: 0 auto; }
+    h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+    .subtitle { color: #7a7a8c; font-size: 14px; margin-bottom: 20px; }
+    .how-it-works { background: #1a1a1f; border: 1px solid #2a2a32; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+    .how-it-works .label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #7f6bff; margin-bottom: 12px; }
+    .how-it-works p { font-size: 13px; color: #7a7a8c; line-height: 2; }
+    .card { background: #1a1a1f; border: 1px solid #2a2a32; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
+    .card h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #7a7a8c; margin-bottom: 16px; }
+    label.field-label { font-size: 12px; color: #7a7a8c; display: block; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+    .file-label { display: inline-block; padding: 10px 20px; background: #23232b; border: 1px dashed #3a3a48; border-radius: 8px; cursor: pointer; font-size: 14px; color: #e8e8f0; width: 100%; text-align: center; transition: all 0.2s; }
+    .file-label:hover { border-color: #7f6bff; color: #7f6bff; }
+    input[type="file"] { display: none; }
+    .file-name { font-size: 12px; color: #3ecf8e; margin-top: 8px; display: none; }
+    textarea { width: 100%; background: #141417; border: 1px solid #2a2a32; border-radius: 8px; color: #e8e8f0; font-family: 'Segoe UI', sans-serif; font-size: 13px; padding: 12px; outline: none; resize: vertical; min-height: 200px; transition: border-color 0.2s; }
+    textarea:focus { border-color: #7f6bff; }
+    input[type="text"] { width: 100%; background: #141417; border: 1px solid #2a2a32; border-radius: 8px; color: #e8e8f0; font-family: 'Segoe UI', sans-serif; font-size: 13px; padding: 10px 12px; outline: none; transition: border-color 0.2s; margin-bottom: 14px; }
+    input[type="text"]:focus { border-color: #7f6bff; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; width: 100%; justify-content: center; margin-top: 8px; }
+    .btn-purple { background: #7f6bff; color: #fff; }
+    .btn-purple:hover { background: #9b8fff; }
+    .btn-purple:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-green { background: #3ecf8e22; color: #3ecf8e; border: 1px solid #3ecf8e44; }
+    .btn-green:hover { background: #3ecf8e33; }
+    .spinner { width: 16px; height: 16px; border: 2px solid #ffffff33; border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .alert { padding: 12px 14px; border-radius: 8px; font-size: 13px; margin-top: 12px; line-height: 1.8; }
+    .alert-green { background: #3ecf8e18; color: #3ecf8e; border: 1px solid #3ecf8e33; }
+    .alert-red   { background: #ff5c5c18; color: #ff5c5c; border: 1px solid #ff5c5c33; }
+    .alert-amber { background: #f59e0b18; color: #f59e0b; border: 1px solid #f59e0b33; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .tag { font-size: 11.5px; padding: 3px 10px; border-radius: 6px; background: #141417; border: 1px solid #2a2a32; color: #e8e8f0; font-family: monospace; }
+    .section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: #7a7a8c; margin: 12px 0 6px; }
+    .result-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+    .result-actions button { margin-top: 0; flex: 1; }
+    #uploadStatus, #optimizeResult { display: none; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <h1>⚡ ATS Resume Builder</h1>
+  <p class="subtitle">Powered by Groq · LLaMA 3.3 70B</p>
+
+  <div class="how-it-works">
+    <div class="label">How it works</div>
+    <p>
+      <span style="color:#3ecf8e;font-weight:600;">Step 1</span> — Upload your <strong style="color:#e8e8f0;">Junaid_Hasan_CV.tex</strong> file once. This becomes your base template.<br>
+      <span style="color:#3ecf8e;font-weight:600;">Step 2</span> — Paste any job description. AI extracts keywords and rewrites your CV to match.<br>
+      <span style="color:#3ecf8e;font-weight:600;">Step 3</span> — Click <strong style="color:#e8e8f0;">Open in Overleaf</strong> — your optimized CV opens directly. Just hit Recompile and download PDF.<br>
+      <span style="color:#f59e0b;font-weight:600;">Note</span> — Your CV is never faked. AI only rephrases what already exists.
+    </p>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <h2>Step 1 — Upload Your CV Template (.tex)</h2>
+    <label for="texFile" class="file-label" id="fileLabel">📄 Click to select your .tex file</label>
+    <input type="file" id="texFile" accept=".tex" onchange="handleFileSelect(this)" />
+    <div class="file-name" id="fileName"></div>
+    <button class="btn btn-purple" onclick="uploadCV()" id="uploadBtn" style="margin-top:14px">Upload CV Template</button>
+    <div id="uploadStatus"></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card">
+    <h2>Step 2 — Paste Job Description & Optimize</h2>
+    <label class="field-label">Job ID (optional)</label>
+    <input type="text" id="jobId" placeholder="e.g. google-data-analyst" />
+    <label class="field-label">Job Description</label>
+    <textarea id="jobDesc" placeholder="Paste the full job posting here…"></textarea>
+    <button class="btn btn-purple" onclick="optimize()" id="optimizeBtn">⚡ Optimize My Resume</button>
+    <div id="optimizeResult"></div>
+  </div>
+
+</div>
+
+<script>
+  // ── Change this to your Railway URL after deployment ──
+  const API = "http://localhost:8000";
+
+  let selectedFile = null;
+
+  function handleFileSelect(input) {
+    selectedFile = input.files[0];
+    if (selectedFile) {
+      document.getElementById("fileName").style.display = "block";
+      document.getElementById("fileName").textContent = "✓ " + selectedFile.name;
+      document.getElementById("fileLabel").textContent = "📄 " + selectedFile.name;
+    }
+  }
+
+  async function uploadCV() {
+    const statusEl = document.getElementById("uploadStatus");
+    statusEl.style.display = "block";
+    if (!selectedFile) {
+      statusEl.innerHTML = '<div class="alert alert-red">Please select a .tex file first.</div>';
+      return;
+    }
+    const btn = document.getElementById("uploadBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Uploading…';
+    statusEl.innerHTML = '';
+    const form = new FormData();
+    form.append("file", selectedFile);
+    try {
+      const res = await fetch(`${API}/upload-template`, { method: "POST", body: form });
+      const data = await res.json();
+      if (res.ok) {
+        statusEl.innerHTML = `<div class="alert alert-green">✓ ${data.filename} uploaded! Now go to Step 2.</div>`;
+      } else {
+        statusEl.innerHTML = `<div class="alert alert-red">✗ ${data.detail}</div>`;
+      }
+    } catch {
+      statusEl.innerHTML = `<div class="alert alert-red">✗ Cannot connect to backend.</div>`;
+    }
+    btn.disabled = false;
+    btn.innerHTML = 'Upload CV Template';
+  }
+
+  async function optimize() {
+    const resultEl = document.getElementById("optimizeResult");
+    resultEl.style.display = "block";
+    const jd = document.getElementById("jobDesc").value.trim();
+    const jobId = document.getElementById("jobId").value.trim() || `job-${Date.now()}`;
+    if (!jd) {
+      resultEl.innerHTML = '<div class="alert alert-red">Please paste a job description first.</div>';
+      return;
+    }
+    const btn = document.getElementById("optimizeBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Analyzing & Optimizing… (~15 seconds)';
+    resultEl.innerHTML = '';
+
+    try {
+      const res = await fetch(`${API}/optimize`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ job_description: jd, job_id: jobId })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        resultEl.innerHTML = `<div class="alert alert-red">✗ ${data.detail}</div>`;
+        btn.disabled = false;
+        btn.innerHTML = '⚡ Optimize My Resume';
+        return;
+      }
+
+      const a = data.analysis;
+      let html = `<div class="alert alert-green">✓ Resume optimized for <strong>${data.job_id}</strong></div>`;
+
+      if (a?.technical_skills?.length) {
+        html += `<div class="section-title">Technical Skills</div><div class="tags">${a.technical_skills.map(s => `<span class="tag">${s}</span>`).join('')}</div>`;
+      }
+      if (a?.technologies?.length) {
+        html += `<div class="section-title">Technologies</div><div class="tags">${a.technologies.map(s => `<span class="tag">${s}</span>`).join('')}</div>`;
+      }
+      if (a?.keywords?.length) {
+        html += `<div class="section-title">Keywords</div><div class="tags">${a.keywords.map(s => `<span class="tag">${s}</span>`).join('')}</div>`;
+      }
+
+      // Open directly in Overleaf via POST form
+      const texContent = data.tex_content;
+      const formId = `overleaf-form-${Date.now()}`;
+      html += `
+        <form id="${formId}" method="POST" action="https://www.overleaf.com/docs" target="_blank" style="display:none;">
+          <input type="hidden" name="snip" value="">
+          <input type="hidden" name="snip_name" value="${data.job_id}-resume">
+        </form>
+        <div class="result-actions">
+          <button class="btn btn-green" onclick="openOverleaf('${formId}')">🌿 Open Directly in Overleaf</button>
+        </div>
+        <div class="alert alert-amber" style="margin-top:10px">
+          After Overleaf opens → click <strong>Recompile</strong> → then <strong>Download PDF</strong>
+        </div>
+      `;
+
+      resultEl.innerHTML = html;
+
+      // Set the tex content into the form
+      const form = document.getElementById(formId);
+      form.querySelector('input[name="snip"]').value = texContent;
+
+    } catch {
+      resultEl.innerHTML = `<div class="alert alert-red">✗ Cannot connect to backend.</div>`;
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '⚡ Optimize My Resume';
+  }
+
+  function openOverleaf(formId) {
+    document.getElementById(formId).submit();
+  }
+</script>
+</body>
+</html>
