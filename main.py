@@ -115,6 +115,8 @@ STRICT RULES:
 5. Do NOT invent experience or credentials. Only rephrase what already exists.
 6. Do NOT add a Professional Summary or objective section under any circumstances.
 7. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
+8. The CV MUST fit on exactly ONE page. Do not add extra sections.
+
 
 Job Analysis:
 {json.dumps(analysis, indent=2)}
