@@ -112,7 +112,7 @@ STRICT RULES:
 2. Naturally integrate the keywords and skills into skills section and bullet points ONLY.
 3. Rewrite bullet points to match the job's language.
 4. Do NOT add tables, graphics, or complex structures.
-5. The CV MUST fit on exactly ONE page. Be concise. Shorten bullet points, reduce spacing, cut unnecessary words. Do not add extra sections.
+5. 5. Do NOT invent experience or credentials. Only rephrase what already exists.
 6. Do NOT add a Professional Summary or objective section under any circumstances.
 7. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
 
