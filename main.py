@@ -114,7 +114,7 @@ STRICT RULES:
 4. Do NOT add tables, graphics, or complex structures.
 5. The CV MUST fit on exactly ONE page. Be concise. Shorten bullet points, reduce spacing, cut unnecessary words. Do not add extra sections.
 6. Do NOT add a Professional Summary or objective section under any circumstances.
-7. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
+7. The CV MUST fit on exactly ONE page. Be concise. Shorten bullet points, reduce unnecessary words. Do not add extra sections.
 
 Job Analysis:
 {json.dumps(analysis, indent=2)}
