@@ -35,6 +35,10 @@ class OptimizeRequest(BaseModel):
     slot_id: str
 
 
+class SuggestRequest(BaseModel):
+    job_description: str
+
+
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 
 def chat(prompt: str, temperature: float = 0.3) -> str:
@@ -157,6 +161,55 @@ Original LaTeX CV:
         "analysis": analysis,
         "tex_content": optimized_tex,
     }
+
+
+@app.post("/suggest-cv")
+def suggest_cv(req: SuggestRequest):
+    if not templates_store:
+        raise HTTPException(status_code=404, detail="No CVs uploaded yet. Please upload at least one CV in Step 1.")
+
+    # Build a short profile for each CV (title + first ~600 chars of content)
+    cv_profiles = []
+    for slot_id, data in templates_store.items():
+        snippet = data["content"][:800]
+        cv_profiles.append({
+            "slot_id": slot_id,
+            "title": data["title"],
+            "snippet": snippet
+        })
+
+    prompt = f"""You are an ATS career-matching expert. Given a job description and a list of CVs (with title and content snippet), determine how well each CV matches the job.
+
+For each CV, return a match percentage (0-100) representing how well its skills/experience align with the job description's requirements. Also return the slot_id of the single best match, and a short 1-sentence reason.
+
+Return ONLY a valid JSON object, no explanation, no markdown fences. Format exactly:
+{{
+  "matches": [
+    {{"slot_id": "slot1", "title": "Data Analyst", "match_percent": 85}},
+    {{"slot_id": "slot2", "title": "QA", "match_percent": 40}}
+  ],
+  "best_slot_id": "slot1",
+  "reason": "short reason why this CV is the best fit"
+}}
+
+Job Description:
+{req.job_description}
+
+CVs:
+{json.dumps(cv_profiles, indent=2)}"""
+
+    raw = chat(prompt, temperature=0.2)
+    raw = re.sub(r"```json|```", "", raw).strip()
+    try:
+        result = json.loads(raw)
+    except Exception:
+        match = re.search(r'\{.*\}', raw, re.DOTALL)
+        try:
+            result = json.loads(match.group()) if match else {"raw": raw}
+        except Exception:
+            result = {"raw": raw}
+
+    return result
 
 
 @app.get("/health")
