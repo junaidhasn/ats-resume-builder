@@ -139,11 +139,14 @@ STRICT RULES:
 2b. REORDER the Skills section: place the skill categories and individual skills MOST RELEVANT to this job FIRST (left-to-right and top-to-bottom), with less relevant ones later. Within each category, list the most job-relevant skills first.
 3. SKIP keywords that are generic, low-impact, or not core to the role — do not stuff irrelevant terms just to pad the list. Quality and relevance over quantity.
 4. Naturally integrate the chosen keywords into bullet points too, rewriting bullet points to mirror the job's language/terminology where truthful.
+4b. ANTI-REPETITION RULE — this is critical for readability and avoiding "keyword-stuffed" appearance to human recruiters: do NOT repeat the same phrase, term, or buzzword (e.g. a specific framework name, "design system", "modern tech stack", "troubleshooting", a specific methodology) more than ONCE or TWICE across the entire CV, and never in consecutive or nearby bullet points. Each bullet point must describe a DIFFERENT accomplishment or responsibility — vary the verbs, structure, and vocabulary naturally, the way a human would write about different experiences. If a keyword is already well-represented once in the Skills section, you generally do NOT need to repeat it again in multiple bullet points — one strong, natural mention is often enough.
+4c. Write the way a skilled human resume writer would: each bullet should sound distinct and specific, not like variations of the same templated sentence. Avoid the pattern of stating the same skill/tool in nearly identical phrasing across multiple bullets or sections.
 5. Do NOT invent NEW work experience, job titles, companies, or dates. You MAY add relevant skills/tools to the Skills section even if not explicitly used in past roles, as long as they don't contradict the person's background.
 6. Do NOT add tables, graphics, or complex structures.
 7. Do NOT add a Professional Summary or objective section under any circumstances.
 8. The CV MUST fit on exactly ONE page — this is non-negotiable. If adding skills would overflow the page, drop the lowest-priority keywords first rather than overflow.
-9. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
+9. FINAL CHECK before output: scan your own draft for any term/phrase repeated 3+ times across the document (especially across multiple bullet points) and rewrite those occurrences with different wording or remove the redundant mention. The CV should read as natural and professional, not as if keywords were inserted everywhere for ATS purposes.
+10. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
 
 Job Analysis:
 {json.dumps(analysis, indent=2)}
