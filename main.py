@@ -1,11 +1,10 @@
 """
 ATS Resume Builder Agent - FastAPI Backend (Groq)
-Deployment-ready version — no local file system dependency
+Supports multiple named CV templates (slots)
 """
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 import os, json, re
 from groq import Groq
@@ -23,8 +22,9 @@ app.add_middleware(
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 MODEL = "llama-3.3-70b-versatile"
 
-# In-memory storage — no disk needed
-template_store = {"content": None, "filename": None}
+# In-memory storage — slot-based, no disk needed
+# slots: dict of slot_id -> {"title": str, "filename": str, "content": str}
+templates_store = {}
 
 
 # ─── Models ───────────────────────────────────────────────────────────────────
@@ -32,6 +32,7 @@ template_store = {"content": None, "filename": None}
 class OptimizeRequest(BaseModel):
     job_description: str
     job_id: str = "job-1"
+    slot_id: str
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -53,28 +54,49 @@ def root():
 
 
 @app.post("/upload-template")
-async def upload_template(file: UploadFile = File(...)):
+async def upload_template(
+    file: UploadFile = File(...),
+    slot_id: str = Form(...),
+    title: str = Form(...)
+):
     if not file.filename.endswith(".tex"):
         raise HTTPException(status_code=400, detail="Only .tex files are accepted.")
     content = (await file.read()).decode("utf-8")
-    template_store["content"] = content
-    template_store["filename"] = file.filename
-    return {"message": "Template uploaded successfully.", "filename": file.filename}
+    templates_store[slot_id] = {
+        "title": title,
+        "filename": file.filename,
+        "content": content,
+    }
+    return {"message": "Template uploaded successfully.", "filename": file.filename, "slot_id": slot_id, "title": title}
 
 
-@app.get("/template-status")
-def template_status():
-    if template_store["content"]:
-        return {"exists": True, "filename": template_store["filename"]}
-    return {"exists": False}
+@app.get("/templates")
+def list_templates():
+    """Return all uploaded CV slots (without full content for lighter response)."""
+    return {
+        slot_id: {
+            "title": data["title"],
+            "filename": data["filename"],
+            "exists": True,
+        }
+        for slot_id, data in templates_store.items()
+    }
+
+
+@app.delete("/templates/{slot_id}")
+def delete_template(slot_id: str):
+    if slot_id in templates_store:
+        del templates_store[slot_id]
+        return {"message": "Deleted"}
+    raise HTTPException(status_code=404, detail="Slot not found.")
 
 
 @app.post("/optimize")
 def optimize_resume(req: OptimizeRequest):
-    if not template_store["content"]:
-        raise HTTPException(status_code=404, detail="No CV template found. Please upload one first.")
+    if req.slot_id not in templates_store:
+        raise HTTPException(status_code=404, detail="No CV found for this slot. Please upload one first.")
 
-    template_content = template_store["content"]
+    template_content = templates_store[req.slot_id]["content"]
 
     # Step 1: Extract keywords from JD
     extraction_prompt = f"""You are an ATS expert. Analyze the following job description and extract key information.
@@ -114,9 +136,8 @@ STRICT RULES:
 4. Do NOT add tables, graphics, or complex structures.
 5. Do NOT invent experience or credentials. Only rephrase what already exists.
 6. Do NOT add a Professional Summary or objective section under any circumstances.
-7. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
-8. The CV MUST fit on exactly ONE page. Do not add extra sections.
-
+7. The CV MUST fit on exactly ONE page. Do not add extra sections.
+8. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
 
 Job Analysis:
 {json.dumps(analysis, indent=2)}
@@ -132,6 +153,7 @@ Original LaTeX CV:
 
     return {
         "job_id": req.job_id,
+        "slot_id": req.slot_id,
         "analysis": analysis,
         "tex_content": optimized_tex,
     }

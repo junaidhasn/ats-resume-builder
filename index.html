@@ -7,7 +7,7 @@
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', sans-serif; background: #0f0f11; color: #e8e8f0; min-height: 100vh; padding: 40px 20px; }
-    .container { max-width: 700px; margin: 0 auto; }
+    .container { max-width: 760px; margin: 0 auto; }
     h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
     .subtitle { color: #7a7a8c; font-size: 14px; margin-bottom: 20px; }
     .how-it-works { background: #1a1a1f; border: 1px solid #2a2a32; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
@@ -16,20 +16,20 @@
     .card { background: #1a1a1f; border: 1px solid #2a2a32; border-radius: 12px; padding: 24px; margin-bottom: 20px; }
     .card h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #7a7a8c; margin-bottom: 16px; }
     label.field-label { font-size: 12px; color: #7a7a8c; display: block; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
-    .file-label { display: inline-block; padding: 10px 20px; background: #23232b; border: 1px dashed #3a3a48; border-radius: 8px; cursor: pointer; font-size: 14px; color: #e8e8f0; width: 100%; text-align: center; transition: all 0.2s; }
+    .file-label { display: inline-block; padding: 10px 16px; background: #23232b; border: 1px dashed #3a3a48; border-radius: 8px; cursor: pointer; font-size: 13px; color: #e8e8f0; width: 100%; text-align: center; transition: all 0.2s; }
     .file-label:hover { border-color: #7f6bff; color: #7f6bff; }
     input[type="file"] { display: none; }
-    .file-name { font-size: 12px; color: #3ecf8e; margin-top: 8px; display: none; }
     textarea { width: 100%; background: #141417; border: 1px solid #2a2a32; border-radius: 8px; color: #e8e8f0; font-family: 'Segoe UI', sans-serif; font-size: 13px; padding: 12px; outline: none; resize: vertical; min-height: 200px; transition: border-color 0.2s; }
     textarea:focus { border-color: #7f6bff; }
-    input[type="text"] { width: 100%; background: #141417; border: 1px solid #2a2a32; border-radius: 8px; color: #e8e8f0; font-family: 'Segoe UI', sans-serif; font-size: 13px; padding: 10px 12px; outline: none; transition: border-color 0.2s; margin-bottom: 14px; }
-    input[type="text"]:focus { border-color: #7f6bff; }
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; width: 100%; justify-content: center; margin-top: 8px; }
+    input[type="text"], select { width: 100%; background: #141417; border: 1px solid #2a2a32; border-radius: 8px; color: #e8e8f0; font-family: 'Segoe UI', sans-serif; font-size: 13px; padding: 10px 12px; outline: none; transition: border-color 0.2s; margin-bottom: 14px; }
+    input[type="text"]:focus, select:focus { border-color: #7f6bff; }
+    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; width: 100%; justify-content: center; margin-top: 8px; }
     .btn-purple { background: #7f6bff; color: #fff; }
     .btn-purple:hover { background: #9b8fff; }
     .btn-purple:disabled { opacity: 0.4; cursor: not-allowed; }
     .btn-green { background: #3ecf8e22; color: #3ecf8e; border: 1px solid #3ecf8e44; }
     .btn-green:hover { background: #3ecf8e33; }
+    .btn-red { background: #ff5c5c18; color: #ff5c5c; border: 1px solid #ff5c5c44; font-size: 11.5px; padding: 6px 10px; width: auto; margin-top: 0; }
     .spinner { width: 16px; height: 16px; border: 2px solid #ffffff33; border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .alert { padding: 12px 14px; border-radius: 8px; font-size: 13px; margin-top: 12px; line-height: 1.8; }
@@ -42,6 +42,22 @@
     .result-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
     .result-actions button { margin-top: 0; flex: 1; }
     #uploadStatus, #optimizeResult { display: none; }
+
+    /* CV slot grid */
+    .slots-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .slot {
+      background: #141417; border: 1px solid #2a2a32; border-radius: 10px;
+      padding: 14px; display: flex; flex-direction: column; gap: 8px;
+    }
+    .slot.filled { border-color: #3ecf8e44; }
+    .slot-title-input { margin-bottom: 0 !important; font-size: 12.5px; padding: 8px 10px; }
+    .slot-status { font-size: 11.5px; color: #7a7a8c; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .slot-status .filename { color: #3ecf8e; font-family: monospace; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
+    .slot .file-label { font-size: 12px; padding: 8px 10px; }
+
+    @media (max-width: 600px) {
+      .slots-grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -53,28 +69,29 @@
   <div class="how-it-works">
     <div class="label">How it works</div>
     <p>
-      <span style="color:#3ecf8e;font-weight:600;">Step 1</span> — Upload your <strong style="color:#e8e8f0;">Junaid_Hasan_CV.tex</strong> file once. This becomes your base template.<br>
-      <span style="color:#3ecf8e;font-weight:600;">Step 2</span> — Paste any job description. AI extracts keywords and rewrites your CV to match.<br>
-      <span style="color:#3ecf8e;font-weight:600;">Step 3</span> — Click <strong style="color:#e8e8f0;">Open in Overleaf</strong> — your optimized CV opens directly. Just hit Recompile and download PDF.<br>
-      <span style="color:#f59e0b;font-weight:600;">Note</span> — Your CV is never faked. AI only rephrases what already exists.
+      <span style="color:#3ecf8e;font-weight:600;">Step 1</span> — Upload up to 4 CVs (.tex), give each a title (e.g. Data Analyst, QA, Software Engineer, AI/ML Engineer). Save once — no need to re-upload.<br>
+      <span style="color:#3ecf8e;font-weight:600;">Step 2</span> — Pick which CV to use, paste a job description, click Optimize.<br>
+      <span style="color:#3ecf8e;font-weight:600;">Step 3</span> — Click <strong style="color:#e8e8f0;">Open in Overleaf</strong> — your optimized CV opens directly. Hit Recompile and download PDF.<br>
+      <span style="color:#f59e0b;font-weight:600;">Note</span> — Your CV is never faked. AI only rephrases what already exists, and keeps it to 1 page.
     </p>
   </div>
 
   <!-- STEP 1 -->
   <div class="card">
-    <h2>Step 1 — Upload Your CV Template (.tex)</h2>
-    <label for="texFile" class="file-label" id="fileLabel">📄 Click to select your .tex file</label>
-    <input type="file" id="texFile" accept=".tex" onchange="handleFileSelect(this)" />
-    <div class="file-name" id="fileName"></div>
-    <button class="btn btn-purple" onclick="uploadCV()" id="uploadBtn" style="margin-top:14px">Upload CV Template</button>
+    <h2>Step 1 — Upload Your CVs (up to 4)</h2>
+    <div class="slots-grid" id="slotsGrid"></div>
     <div id="uploadStatus"></div>
   </div>
 
   <!-- STEP 2 -->
   <div class="card">
-    <h2>Step 2 — Paste Job Description & Optimize</h2>
+    <h2>Step 2 — Choose CV, Paste Job Description & Optimize</h2>
+    <label class="field-label">Which CV to optimize</label>
+    <select id="slotSelect"></select>
+
     <label class="field-label">Job ID (optional)</label>
     <input type="text" id="jobId" placeholder="e.g. google-data-analyst" />
+
     <label class="field-label">Job Description</label>
     <textarea id="jobDesc" placeholder="Paste the full job posting here…"></textarea>
     <button class="btn btn-purple" onclick="optimize()" id="optimizeBtn">⚡ Optimize My Resume</button>
@@ -84,45 +101,116 @@
 </div>
 
 <script>
-  // ── Change this to your Railway URL after deployment ──
   const API = "https://web-production-a6e1c.up.railway.app";
-  let selectedFile = null;
 
-  function handleFileSelect(input) {
-    selectedFile = input.files[0];
-    if (selectedFile) {
-      document.getElementById("fileName").style.display = "block";
-      document.getElementById("fileName").textContent = "✓ " + selectedFile.name;
-      document.getElementById("fileLabel").textContent = "📄 " + selectedFile.name;
+  const SLOT_IDS = ["slot1", "slot2", "slot3", "slot4"];
+  const DEFAULT_TITLES = {
+    slot1: "Data Analyst",
+    slot2: "QA",
+    slot3: "Software Engineer",
+    slot4: "AI/ML Engineer"
+  };
+
+  let slotFiles = {};        // slot_id -> File object (pending upload)
+  let slotStatus = {};        // slot_id -> { title, filename, exists }
+
+  // ── Build the 4 CV upload slots ──
+  function renderSlots() {
+    const grid = document.getElementById("slotsGrid");
+    grid.innerHTML = "";
+    SLOT_IDS.forEach((slotId) => {
+      const status = slotStatus[slotId] || {};
+      const title = status.title || DEFAULT_TITLES[slotId];
+      const filled = !!status.exists;
+
+      const div = document.createElement("div");
+      div.className = "slot" + (filled ? " filled" : "");
+      div.innerHTML = `
+        <input type="text" class="slot-title-input" id="title-${slotId}" placeholder="CV title (e.g. Data Analyst)" value="${title}" />
+        <label for="file-${slotId}" class="file-label" id="filelabel-${slotId}">${filled ? "📄 Replace .tex file" : "📄 Select .tex file"}</label>
+        <input type="file" id="file-${slotId}" accept=".tex" onchange="handleSlotFile('${slotId}', this)" />
+        <div class="slot-status">
+          <span>${filled ? "✓ Saved" : "Not uploaded"}</span>
+          <span class="filename">${filled ? status.filename : ""}</span>
+        </div>
+        <button class="btn btn-purple" style="margin-top:4px" onclick="saveSlot('${slotId}')">${filled ? "Update CV" : "Save CV"}</button>
+      `;
+      grid.appendChild(div);
+    });
+    renderSlotSelect();
+  }
+
+  function handleSlotFile(slotId, input) {
+    const file = input.files[0];
+    if (file && !file.name.endsWith(".tex")) {
+      alert("Please select a .tex file.");
+      input.value = "";
+      return;
+    }
+    slotFiles[slotId] = file;
+    if (file) {
+      document.getElementById(`filelabel-${slotId}`).textContent = "📄 " + file.name;
     }
   }
 
-  async function uploadCV() {
+  async function saveSlot(slotId) {
     const statusEl = document.getElementById("uploadStatus");
     statusEl.style.display = "block";
-    if (!selectedFile) {
-      statusEl.innerHTML = '<div class="alert alert-red">Please select a .tex file first.</div>';
+
+    const title = document.getElementById(`title-${slotId}`).value.trim() || DEFAULT_TITLES[slotId];
+    const file = slotFiles[slotId];
+
+    if (!file) {
+      statusEl.innerHTML = `<div class="alert alert-red">Please select a .tex file for "${title}" first.</div>`;
       return;
     }
-    const btn = document.getElementById("uploadBtn");
-    btn.disabled = true;
-    btn.innerHTML = '<div class="spinner"></div> Uploading…';
-    statusEl.innerHTML = '';
+
+    statusEl.innerHTML = `<div class="alert alert-amber"><div class="spinner" style="display:inline-block;vertical-align:middle;margin-right:8px;"></div> Saving "${title}"…</div>`;
+
     const form = new FormData();
-    form.append("file", selectedFile);
+    form.append("file", file);
+    form.append("slot_id", slotId);
+    form.append("title", title);
+
     try {
       const res = await fetch(`${API}/upload-template`, { method: "POST", body: form });
       const data = await res.json();
       if (res.ok) {
-        statusEl.innerHTML = `<div class="alert alert-green">✓ ${data.filename} uploaded! Now go to Step 2.</div>`;
+        statusEl.innerHTML = `<div class="alert alert-green">✓ "${data.title}" saved successfully.</div>`;
+        await loadTemplates();
       } else {
         statusEl.innerHTML = `<div class="alert alert-red">✗ ${data.detail}</div>`;
       }
     } catch {
       statusEl.innerHTML = `<div class="alert alert-red">✗ Cannot connect to backend.</div>`;
     }
-    btn.disabled = false;
-    btn.innerHTML = 'Upload CV Template';
+  }
+
+  async function loadTemplates() {
+    try {
+      const res = await fetch(`${API}/templates`);
+      const data = await res.json();
+      slotStatus = data;
+    } catch {
+      slotStatus = {};
+    }
+    renderSlots();
+  }
+
+  function renderSlotSelect() {
+    const sel = document.getElementById("slotSelect");
+    const prev = sel.value;
+    sel.innerHTML = "";
+    SLOT_IDS.forEach((slotId) => {
+      const status = slotStatus[slotId];
+      const title = (status && status.title) || DEFAULT_TITLES[slotId];
+      const opt = document.createElement("option");
+      opt.value = slotId;
+      opt.textContent = status && status.exists ? `${title}` : `${title} (not uploaded yet)`;
+      if (!(status && status.exists)) opt.disabled = true;
+      sel.appendChild(opt);
+    });
+    if (prev) sel.value = prev;
   }
 
   async function optimize() {
@@ -130,10 +218,17 @@
     resultEl.style.display = "block";
     const jd = document.getElementById("jobDesc").value.trim();
     const jobId = document.getElementById("jobId").value.trim() || `job-${Date.now()}`;
+    const slotId = document.getElementById("slotSelect").value;
+
     if (!jd) {
       resultEl.innerHTML = '<div class="alert alert-red">Please paste a job description first.</div>';
       return;
     }
+    if (!slotId || !(slotStatus[slotId] && slotStatus[slotId].exists)) {
+      resultEl.innerHTML = '<div class="alert alert-red">Please upload and save at least one CV in Step 1 first.</div>';
+      return;
+    }
+
     const btn = document.getElementById("optimizeBtn");
     btn.disabled = true;
     btn.innerHTML = '<div class="spinner"></div> Analyzing & Optimizing… (~15 seconds)';
@@ -143,7 +238,7 @@
       const res = await fetch(`${API}/optimize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ job_description: jd, job_id: jobId })
+        body: JSON.stringify({ job_description: jd, job_id: jobId, slot_id: slotId })
       });
       const data = await res.json();
 
@@ -155,7 +250,8 @@
       }
 
       const a = data.analysis;
-      let html = `<div class="alert alert-green">✓ Resume optimized for <strong>${data.job_id}</strong></div>`;
+      const cvTitle = (slotStatus[slotId] && slotStatus[slotId].title) || slotId;
+      let html = `<div class="alert alert-green">✓ "${cvTitle}" CV optimized for <strong>${data.job_id}</strong></div>`;
 
       if (a?.technical_skills?.length) {
         html += `<div class="section-title">Technical Skills</div><div class="tags">${a.technical_skills.map(s => `<span class="tag">${s}</span>`).join('')}</div>`;
@@ -173,7 +269,7 @@
       html += `
         <form id="${formId}" method="POST" action="https://www.overleaf.com/docs" target="_blank" style="display:none;">
           <input type="hidden" name="snip" value="">
-          <input type="hidden" name="snip_name" value="${data.job_id}-resume">
+          <input type="hidden" name="snip_name" value="${data.job_id}-${cvTitle.replace(/\\s+/g,'-')}-resume">
         </form>
         <div class="result-actions">
           <button class="btn btn-green" onclick="openOverleaf('${formId}')">🌿 Open Directly in Overleaf</button>
@@ -185,7 +281,6 @@
 
       resultEl.innerHTML = html;
 
-      // Set the tex content into the form
       const form = document.getElementById(formId);
       form.querySelector('input[name="snip"]').value = texContent;
 
@@ -200,6 +295,10 @@
   function openOverleaf(formId) {
     document.getElementById(formId).submit();
   }
+
+  // Init
+  renderSlots();
+  loadTemplates();
 </script>
 </body>
 </html>
