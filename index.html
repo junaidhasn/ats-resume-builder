@@ -277,6 +277,11 @@
           // Auto-select it in the dropdown
           const sel = document.getElementById("slotSelect");
           sel.value = data.best_slot_id;
+        } else {
+          html += `<div class="alert alert-amber" style="margin-top:10px;">
+            ⚠ None of your uploaded CVs are a strong match for this job.${data.reason ? ` ${data.reason}` : ''}<br><br>
+            ${data.ideal_cv_title ? `💡 Consider creating/uploading a CV titled <strong style="color:#e8e8f0;">"${data.ideal_cv_title}"</strong> for jobs like this.` : ''}
+          </div>`;
         }
 
         resultEl.innerHTML = html;

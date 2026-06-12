@@ -131,19 +131,20 @@ Job Description:
             analysis = {"raw": raw}
 
     # Step 2: Optimize resume
-    optimization_prompt = f"""You are an expert ATS resume optimizer. Update the LaTeX CV below to be FULLY optimized for the given job and to PASS ATS keyword-matching scans.
+    optimization_prompt = f"""You are an expert ATS resume optimizer. Update the LaTeX CV below to be optimized for the given job and to PASS ATS keyword-matching scans — while staying on ONE PAGE.
 
 STRICT RULES:
 1. Keep ALL LaTeX structure, packages, and formatting commands exactly as-is.
-2. CRITICAL — Every single item in "technical_skills", "technologies", and "keywords" from the Job Analysis below MUST appear somewhere in the CV, using the EXACT same wording/spelling as in the Job Analysis (ATS scans do exact string matches). If a skill is not currently in the CV, add it to the Skills section as a new entry under the most relevant category (or create a new category if needed).
-3. Naturally integrate keywords into bullet points and rewrite bullet points to mirror the job's language/terminology where truthful.
-4. Do NOT invent NEW work experience, job titles, companies, or dates. You MAY add additional skills/tools to the Skills section even if not explicitly used in past roles, as long as they don't contradict the person's background — treat the Skills section as a keyword-coverage section, not a claims section.
-5. Do NOT add tables, graphics, or complex structures.
-6. Do NOT add a Professional Summary or objective section under any circumstances.
-7. The CV MUST fit on exactly ONE page. Use concise phrasing and tight skill lists to fit everything.
-8. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
+2. From the Job Analysis below, identify which "technical_skills", "technologies", and "keywords" are MOST RELEVANT and HIGH-IMPACT for this specific role (the core requirements, not minor/generic mentions). Prioritize these. Add the relevant ones into the Skills section using the EXACT same wording/spelling as in the Job Analysis (ATS scans do exact string matches), under the most fitting category.
+3. SKIP keywords that are generic, low-impact, or not core to the role — do not stuff irrelevant terms just to pad the list. Quality and relevance over quantity.
+4. Naturally integrate the chosen keywords into bullet points too, rewriting bullet points to mirror the job's language/terminology where truthful.
+5. Do NOT invent NEW work experience, job titles, companies, or dates. You MAY add relevant skills/tools to the Skills section even if not explicitly used in past roles, as long as they don't contradict the person's background.
+6. Do NOT add tables, graphics, or complex structures.
+7. Do NOT add a Professional Summary or objective section under any circumstances.
+8. The CV MUST fit on exactly ONE page — this is non-negotiable. If adding skills would overflow the page, drop the lowest-priority keywords first rather than overflow.
+9. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
 
-Job Analysis (ALL of these keywords/skills/technologies MUST be present verbatim somewhere in the output):
+Job Analysis:
 {json.dumps(analysis, indent=2)}
 
 Original LaTeX CV:
@@ -155,7 +156,7 @@ Original LaTeX CV:
         optimized_tex = re.sub(r"^```[a-z]*\n?", "", optimized_tex)
         optimized_tex = re.sub(r"\n?```$", "", optimized_tex)
 
-    # Step 3: Verify keyword coverage — find any ATS keywords missing from the output
+    # Step 3: Check coverage of the most relevant keywords (informational only — no forced re-injection, to protect 1-page constraint)
     all_keywords = set()
     for field in ["technical_skills", "technologies", "keywords"]:
         for kw in analysis.get(field, []) if isinstance(analysis, dict) else []:
@@ -164,30 +165,7 @@ Original LaTeX CV:
 
     tex_lower = optimized_tex.lower()
     missing = [kw for kw in all_keywords if kw.lower() not in tex_lower]
-
-    if missing:
-        # Step 4: Force-inject missing keywords into the Skills section
-        fix_prompt = f"""The following LaTeX CV is missing these ATS keywords (exact wording required for ATS matching):
-{json.dumps(missing, indent=2)}
-
-Add ALL of these missing keywords into the existing Skills section of the LaTeX CV below, using the exact wording given, placed under the most relevant category (or add to an existing category's list with commas). Do NOT remove or change anything else. Do NOT add a new section. Keep the CV fitting on ONE page — if needed, slightly shorten existing skill descriptions to make room.
-
-Return ONLY the complete updated LaTeX content. No explanation, no markdown fences.
-
-LaTeX CV:
-{optimized_tex}"""
-
-        fixed_tex = chat(fix_prompt, temperature=0.3)
-        if fixed_tex.startswith("```"):
-            fixed_tex = re.sub(r"^```[a-z]*\n?", "", fixed_tex)
-            fixed_tex = re.sub(r"\n?```$", "", fixed_tex)
-
-        # Re-check coverage after fix
-        fixed_lower = fixed_tex.lower()
-        still_missing = [kw for kw in missing if kw.lower() not in fixed_lower]
-        if len(still_missing) < len(missing):
-            optimized_tex = fixed_tex
-            missing = still_missing
+    covered = [kw for kw in all_keywords if kw.lower() in tex_lower]
 
     return {
         "job_id": req.job_id,
@@ -196,7 +174,7 @@ LaTeX CV:
         "tex_content": optimized_tex,
         "keyword_coverage": {
             "total_keywords": len(all_keywords),
-            "covered": len(all_keywords) - len(missing),
+            "covered": len(covered),
             "missing": missing,
         },
     }
@@ -217,9 +195,13 @@ def suggest_cv(req: SuggestRequest):
             "snippet": snippet
         })
 
-    prompt = f"""You are an ATS career-matching expert. Given a job description and a list of CVs (with title and content snippet), determine how well each CV matches the job.
+    prompt = f"""You are an ATS career-matching expert. Given a job description and a list of CVs (with title and content snippet), determine how well each CV matches the job, AND identify what type/title of CV would be IDEALLY suited for this job (regardless of what's uploaded).
 
-For each CV, return a match percentage (0-100) representing how well its skills/experience align with the job description's requirements. Also return the slot_id of the single best match, and a short 1-sentence reason.
+For each uploaded CV, return a match percentage (0-100) representing how well its skills/experience align with the job description's requirements.
+
+Also determine the IDEAL CV title for this job — a short role-type label (e.g. "Frontend Developer", "Backend Developer", "Full Stack Developer", "Data Scientist", "DevOps Engineer", "Mobile Developer", "Cloud Engineer", etc.) based purely on the job description's required skills, independent of the uploaded CVs.
+
+Then compare: if the best-matching uploaded CV has match_percent >= 60, recommend using that CV (best_slot_id). If even the best uploaded CV has match_percent < 60, set best_slot_id to null and clearly state in "reason" that none of the uploaded CVs are a strong fit, and that the user should consider creating/uploading a CV titled like the "ideal_cv_title".
 
 Return ONLY a valid JSON object, no explanation, no markdown fences. Format exactly:
 {{
@@ -227,8 +209,9 @@ Return ONLY a valid JSON object, no explanation, no markdown fences. Format exac
     {{"slot_id": "slot1", "title": "Data Analyst", "match_percent": 85}},
     {{"slot_id": "slot2", "title": "QA", "match_percent": 40}}
   ],
+  "ideal_cv_title": "Frontend Developer",
   "best_slot_id": "slot1",
-  "reason": "short reason why this CV is the best fit"
+  "reason": "short reason explaining the recommendation"
 }}
 
 Job Description:
