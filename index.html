@@ -331,6 +331,20 @@
       const cvTitle = (slotStatus[slotId] && slotStatus[slotId].title) || slotId;
       let html = `<div class="alert alert-green">✓ "${cvTitle}" CV optimized for <strong>${data.job_id}</strong></div>`;
 
+      if (data.keyword_coverage) {
+        const kc = data.keyword_coverage;
+        const pct = kc.total_keywords > 0 ? Math.round((kc.covered / kc.total_keywords) * 100) : 100;
+        const color = pct >= 90 ? "#3ecf8e" : pct >= 60 ? "#f59e0b" : "#ff5c5c";
+        html += `<div class="match-row" style="margin-top:10px;">
+          <div class="match-title">ATS Keyword Coverage</div>
+          <div class="match-bar-bg"><div class="match-bar-fill" style="width:${pct}%; background:${color};"></div></div>
+          <div class="match-pct">${kc.covered}/${kc.total_keywords}</div>
+        </div>`;
+        if (kc.missing && kc.missing.length > 0) {
+          html += `<div class="alert alert-amber" style="margin-top:8px;">⚠ Could not fit: ${kc.missing.map(k => `<span class="tag" style="margin:2px;">${k}</span>`).join('')}</div>`;
+        }
+      }
+
       if (a?.technical_skills?.length) {
         html += `<div class="section-title">Technical Skills</div><div class="tags">${a.technical_skills.map(s => `<span class="tag">${s}</span>`).join('')}</div>`;
       }

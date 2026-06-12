@@ -131,19 +131,19 @@ Job Description:
             analysis = {"raw": raw}
 
     # Step 2: Optimize resume
-    optimization_prompt = f"""You are an expert ATS resume optimizer. Update the LaTeX CV below to be optimized for the given job.
+    optimization_prompt = f"""You are an expert ATS resume optimizer. Update the LaTeX CV below to be FULLY optimized for the given job and to PASS ATS keyword-matching scans.
 
 STRICT RULES:
 1. Keep ALL LaTeX structure, packages, and formatting commands exactly as-is.
-2. Naturally integrate the keywords and skills into skills section and bullet points ONLY.
-3. Rewrite bullet points to match the job's language.
-4. Do NOT add tables, graphics, or complex structures.
-5. Do NOT invent experience or credentials. Only rephrase what already exists.
+2. CRITICAL — Every single item in "technical_skills", "technologies", and "keywords" from the Job Analysis below MUST appear somewhere in the CV, using the EXACT same wording/spelling as in the Job Analysis (ATS scans do exact string matches). If a skill is not currently in the CV, add it to the Skills section as a new entry under the most relevant category (or create a new category if needed).
+3. Naturally integrate keywords into bullet points and rewrite bullet points to mirror the job's language/terminology where truthful.
+4. Do NOT invent NEW work experience, job titles, companies, or dates. You MAY add additional skills/tools to the Skills section even if not explicitly used in past roles, as long as they don't contradict the person's background — treat the Skills section as a keyword-coverage section, not a claims section.
+5. Do NOT add tables, graphics, or complex structures.
 6. Do NOT add a Professional Summary or objective section under any circumstances.
-7. The CV MUST fit on exactly ONE page. Do not add extra sections.
+7. The CV MUST fit on exactly ONE page. Use concise phrasing and tight skill lists to fit everything.
 8. Return ONLY the complete updated LaTeX content. No explanation, no markdown fences, no ```latex.
 
-Job Analysis:
+Job Analysis (ALL of these keywords/skills/technologies MUST be present verbatim somewhere in the output):
 {json.dumps(analysis, indent=2)}
 
 Original LaTeX CV:
@@ -155,11 +155,50 @@ Original LaTeX CV:
         optimized_tex = re.sub(r"^```[a-z]*\n?", "", optimized_tex)
         optimized_tex = re.sub(r"\n?```$", "", optimized_tex)
 
+    # Step 3: Verify keyword coverage — find any ATS keywords missing from the output
+    all_keywords = set()
+    for field in ["technical_skills", "technologies", "keywords"]:
+        for kw in analysis.get(field, []) if isinstance(analysis, dict) else []:
+            if isinstance(kw, str) and kw.strip():
+                all_keywords.add(kw.strip())
+
+    tex_lower = optimized_tex.lower()
+    missing = [kw for kw in all_keywords if kw.lower() not in tex_lower]
+
+    if missing:
+        # Step 4: Force-inject missing keywords into the Skills section
+        fix_prompt = f"""The following LaTeX CV is missing these ATS keywords (exact wording required for ATS matching):
+{json.dumps(missing, indent=2)}
+
+Add ALL of these missing keywords into the existing Skills section of the LaTeX CV below, using the exact wording given, placed under the most relevant category (or add to an existing category's list with commas). Do NOT remove or change anything else. Do NOT add a new section. Keep the CV fitting on ONE page — if needed, slightly shorten existing skill descriptions to make room.
+
+Return ONLY the complete updated LaTeX content. No explanation, no markdown fences.
+
+LaTeX CV:
+{optimized_tex}"""
+
+        fixed_tex = chat(fix_prompt, temperature=0.3)
+        if fixed_tex.startswith("```"):
+            fixed_tex = re.sub(r"^```[a-z]*\n?", "", fixed_tex)
+            fixed_tex = re.sub(r"\n?```$", "", fixed_tex)
+
+        # Re-check coverage after fix
+        fixed_lower = fixed_tex.lower()
+        still_missing = [kw for kw in missing if kw.lower() not in fixed_lower]
+        if len(still_missing) < len(missing):
+            optimized_tex = fixed_tex
+            missing = still_missing
+
     return {
         "job_id": req.job_id,
         "slot_id": req.slot_id,
         "analysis": analysis,
         "tex_content": optimized_tex,
+        "keyword_coverage": {
+            "total_keywords": len(all_keywords),
+            "covered": len(all_keywords) - len(missing),
+            "missing": missing,
+        },
     }
 
 
