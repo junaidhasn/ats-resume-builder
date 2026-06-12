@@ -336,6 +336,19 @@
       const cvTitle = (slotStatus[slotId] && slotStatus[slotId].title) || slotId;
       let html = `<div class="alert alert-green">✓ "${cvTitle}" CV optimized for <strong>${data.job_id}</strong></div>`;
 
+      if (typeof data.ats_score === "number") {
+        const score = Math.max(0, Math.min(100, data.ats_score));
+        const color = score >= 80 ? "#3ecf8e" : score >= 60 ? "#f59e0b" : "#ff5c5c";
+        html += `
+          <div style="display:flex; align-items:center; gap:14px; margin-top:12px; background:#141417; border:1px solid #2a2a32; border-radius:10px; padding:14px 16px;">
+            <div style="font-size:28px; font-weight:700; color:${color}; font-family:monospace;">${score}</div>
+            <div>
+              <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:#7a7a8c;">ATS Score</div>
+              <div style="font-size:12.5px; color:#e8e8f0; margin-top:2px;">${data.ats_summary || ''}</div>
+            </div>
+          </div>`;
+      }
+
       if (data.keyword_coverage) {
         const kc = data.keyword_coverage;
         const pct = kc.total_keywords > 0 ? Math.round((kc.covered / kc.total_keywords) * 100) : 100;

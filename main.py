@@ -136,6 +136,7 @@ Job Description:
 STRICT RULES:
 1. Keep ALL LaTeX structure, packages, and formatting commands exactly as-is.
 2. From the Job Analysis below, identify which "technical_skills", "technologies", and "keywords" are MOST RELEVANT and HIGH-IMPACT for this specific role (the core requirements, not minor/generic mentions). Prioritize these. Add the relevant ones into the Skills section using the EXACT same wording/spelling as in the Job Analysis (ATS scans do exact string matches), under the most fitting category.
+2b. REORDER the Skills section: place the skill categories and individual skills MOST RELEVANT to this job FIRST (left-to-right and top-to-bottom), with less relevant ones later. Within each category, list the most job-relevant skills first.
 3. SKIP keywords that are generic, low-impact, or not core to the role — do not stuff irrelevant terms just to pad the list. Quality and relevance over quantity.
 4. Naturally integrate the chosen keywords into bullet points too, rewriting bullet points to mirror the job's language/terminology where truthful.
 5. Do NOT invent NEW work experience, job titles, companies, or dates. You MAY add relevant skills/tools to the Skills section even if not explicitly used in past roles, as long as they don't contradict the person's background.
@@ -167,11 +168,44 @@ Original LaTeX CV:
     missing = [kw for kw in all_keywords if kw.lower() not in tex_lower]
     covered = [kw for kw in all_keywords if kw.lower() in tex_lower]
 
+    # Step 4: ATS score for the final optimized CV against the job description
+    score_prompt = f"""You are an ATS (Applicant Tracking System) scoring engine. Compare the LaTeX CV below against the job description and give it an ATS match score from 0-100.
+
+Consider: keyword/skill overlap, relevance of experience, use of job-related terminology, and overall alignment with the role's requirements.
+
+Return ONLY a valid JSON object, no explanation, no markdown fences. Format exactly:
+{{
+  "ats_score": 87,
+  "summary": "one short sentence explaining the score"
+}}
+
+Job Description:
+{req.job_description}
+
+LaTeX CV:
+{optimized_tex}"""
+
+    score_raw = chat(score_prompt, temperature=0.2)
+    score_raw = re.sub(r"```json|```", "", score_raw).strip()
+    try:
+        score_data = json.loads(score_raw)
+    except Exception:
+        match = re.search(r'\{.*\}', score_raw, re.DOTALL)
+        try:
+            score_data = json.loads(match.group()) if match else {}
+        except Exception:
+            score_data = {}
+
+    ats_score = score_data.get("ats_score")
+    ats_summary = score_data.get("summary", "")
+
     return {
         "job_id": req.job_id,
         "slot_id": req.slot_id,
         "analysis": analysis,
         "tex_content": optimized_tex,
+        "ats_score": ats_score,
+        "ats_summary": ats_summary,
         "keyword_coverage": {
             "total_keywords": len(all_keywords),
             "covered": len(covered),
